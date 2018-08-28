@@ -1,12 +1,13 @@
 'use strict';
 
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import {
   View,
   WebView,
   StyleSheet,
+  ViewPropTypes
 } from 'react-native';
-
+import PropTypes from 'prop-types';
 
 import htmlContent from './injectedHtml';
 import injectedSignaturePad from './injectedJavaScript/signaturePad';
@@ -17,9 +18,11 @@ import injectedExecuteNativeFunction from './injectedJavaScript/executeNativeFun
 class SignaturePad extends Component {
 
   static propTypes = {
+    defaultHeight: PropTypes.number,
+    defaultWidth: PropTypes.number,
     onChange: PropTypes.func,
     onError: PropTypes.func,
-    style: View.propTypes.style,
+    style: ViewPropTypes ? ViewPropTypes.style : View.propTypes.style,
     penColor: PropTypes.string,
     dataURL: PropTypes.string,
   };
@@ -115,6 +118,11 @@ class SignaturePad extends Component {
 
   };
 
+  _onMessage = (event) => {
+    var base64DataUrl = JSON.parse(event.nativeEvent.data);
+    this._bridged_finishedStroke(base64DataUrl);
+  }
+
   render = () => {
     return (
         <WebView automaticallyAdjustContentInsets={false}
@@ -122,7 +130,9 @@ class SignaturePad extends Component {
                  renderError={this._renderError}
                  renderLoading={this._renderLoading}
                  source={this.source}
+                 scrollEnabled={false}
                  javaScriptEnabled={true}
+                 onMessage={this._onMessage}
                  style={this.props.style}/>
     )
   };
